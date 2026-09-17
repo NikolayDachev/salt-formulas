@@ -69,6 +69,21 @@ include:
     {%- endif %}
     {%- do enslaved.extend(config['bridge_ports'].split()) %}
   {%- endif %}
+
+  {%- if 'rules' in config %}
+/etc/sysconfig/network/ifrule-{{ interface }}:
+  file.managed:
+    - contents: |
+        {{ pillar['managed_by_salt'] }}
+    {%- for table, table_rules in config.rules %}
+      {%- for action, targets in table_rules %}
+        {%- for target in targets %}
+        {{ action }} {{ target }} table {{ table }}
+        {%- endfor %}
+      {%- endfor %}
+    {%- endfor %}
+  {%- endif %}
+
 {%- endfor %} {#- close first interfaces loop #}
 
 {%- for interface, config in interfaces.items() %}
